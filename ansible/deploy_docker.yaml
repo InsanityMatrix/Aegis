@@ -1,0 +1,19 @@
+---
+- name: Install Docker via Snap and run jmalloc/echo-server
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install Docker using Snap
+      community.general.snap:
+        name: docker
+        state: present
+    
+    - name: Enable and start Docker service
+      systemd:
+        name: snap.docker.dockerd
+        enabled: true
+        state: started
+
+    - name: Run jmalloc/echo-server Docker container
+      command: "docker run -d -p 80:8080 {{ container }}"

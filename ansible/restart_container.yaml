@@ -1,0 +1,11 @@
+---
+- name: Restart Docker Container
+  hosts: all
+  become: yes
+  vars:
+    container_name: "{{ container }}"
+
+  tasks:
+    - name: Start Docker container
+      ansible.builtin.command:
+        cmd: "docker start {{ container_name }}"

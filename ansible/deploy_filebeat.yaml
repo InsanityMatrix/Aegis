@@ -1,0 +1,38 @@
+---
+- name: Install and Configure Filebeat
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Install GPG key for Elasticsearch
+      ansible.builtin.apt_key:
+        url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+        state: present
+
+    - name: Add Elasticsearch repository
+      ansible.builtin.apt_repository:
+        repo: "deb [trusted=yes] https://artifacts.elastic.co/packages/8.x/apt stable main"
+        filename: 'elastic-8.x'
+        state: present
+
+    - name: Update apt and install Filebeat
+      ansible.builtin.apt:
+        update_cache: yes
+        name: filebeat
+        state: present
+        allow_unauthenticated: yes
+
+    - name: Deploy Filebeat Configuration
+      template:
+        src: templates/filebeat.yml.j2
+        dest: /etc/filebeat/filebeat.yml
+        owner: root
+        group: root
+        mode: '0600'
+        backup: yes
+
+    - name: Enable and start Filebeat service
+      ansible.builtin.systemd:
+        name: filebeat
+        enabled: yes
+        state: started

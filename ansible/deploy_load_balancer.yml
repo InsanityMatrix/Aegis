@@ -1,0 +1,31 @@
+---
+- name: Configure Ngxinx as a Load Balancer
+  hosts: all
+  become: yes
+  vars:
+    backend_servers: "{{ host_ips }}"
+
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Remove default Nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Configure Nginx Load Balancer
+      template:
+        src: templates/nginx.conf.j2
+        dest: /etc/nginx/nginx.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restart Nginx to apply changes
+      systemd:
+        name: nginx
+        state: restarted
