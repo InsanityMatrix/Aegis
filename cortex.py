@@ -34,7 +34,7 @@ def investigate(data):
 def handle_anomaly():
     data = request.json
     # Start anomaly detection in another thread
-    thread = Thread(target = investigate, args = (data, ))
+    thread = Thread(target = investigate, args = (data, )) # TODO: Implement Task Queue to be conservative with resources
     thread.start()
     return 'Success', 200
 
@@ -92,7 +92,12 @@ def initialize_network():
             thread = Thread(target = machine.provision, args = ("~/.ssh/id_ed25519-pwless", PM_PASS))
             thread.start()
             threads.append(thread)
-            #machine.provision("~/.ssh/id_ed25519-pwless", PM_PASS)
+
+            if len(threads) == 2: # TODO: Only provision 2 machines at a time (HOTFIX)
+                for t in threads:
+                    t.join()
+                    threads.remove(t)
+        
         full_network.append(machine)
 
     for thread in threads:
