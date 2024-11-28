@@ -84,8 +84,7 @@ def initialize_network():
         bsrv.config["host_ips"].append(f"10.0.2.{10+i}")
         balancer.set_service(bsrv.name, bsrv.config)
         network.append(new_webserver)
-
-    print(f"{json.dumps(network)}")
+    
     threads = []
     
     for machine in network:
