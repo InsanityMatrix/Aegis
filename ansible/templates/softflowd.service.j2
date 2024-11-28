@@ -1,0 +1,12 @@
+[Unit]
+Description=Softflowd NetFlow collector
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/softflowd -i {{ network_interface }} -n {{ siem_ip }} -D
+Restart=on-failure
+User=root
+
+[Install]
+WantedBy=multi-user.target

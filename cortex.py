@@ -15,6 +15,9 @@ homedir = os.getcwd()
 PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
 #ISOFLOW = os.getenv('ISOFLOW_SERVER')
+SIEM_IP = os.getenv('SIEM')
+VM_INT = "eth0" # TODO: Allow changing later
+
 
 if type(TF_PROVISION) == str and TF_PROVISION.lower() == "false":
     TF_PROVISION = False
@@ -92,6 +95,9 @@ def initialize_network():
     threads = []
     
     for machine in network:
+        if SIEM_IP: # IF SIEM, also throw softflowd on for IsoFlow Integration
+            machine.services.append(Service("softflowd", {"siem_ip": SIEM_IP, "network_interface": VM_INT}))
+
         if TF_PROVISION: # This could be a cemented network, in which case Aegis does not provision and it just takes security actions
             thread = Thread(target = machine.provision, args = ("~/.ssh/id_ed25519-pwless", PM_PASS))
             thread.start()
@@ -101,7 +107,7 @@ def initialize_network():
                 for t in threads:
                     t.join()
                     threads.remove(t)
-        
+        # TODO: Else do service checks with ansible only?
         full_network.append(machine)
 
     for thread in threads:
@@ -113,6 +119,6 @@ def initialize_network():
 
 if __name__ == '__main__':
     print("Initializing the Network")
-    initialize_network()
+    initialize_network() 
     print("Starting App")
     app.run(port=5000)
