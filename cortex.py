@@ -15,7 +15,7 @@ homedir = os.getcwd()
 PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
 #ISOFLOW = os.getenv('ISOFLOW_SERVER')
-SIEM_IP = os.getenv('SIEM')
+SIEM_IP = os.getenv('SIEM_IP')
 VM_INT = "eth0" # TODO: Allow changing later
 
 
