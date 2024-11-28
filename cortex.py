@@ -14,9 +14,13 @@ full_network = []
 homedir = os.getcwd()
 PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
+#ISOFLOW = os.getenv('ISOFLOW_SERVER')
 
 if type(TF_PROVISION) == str and TF_PROVISION.lower() == "false":
-    TF_Provision = False
+    TF_PROVISION = False
+else:
+    TF_PROVISION = True
+
 
 # Some globally defined Services
 docker_service = Service("docker", { "container" : "jmalloc/echo-server" })
