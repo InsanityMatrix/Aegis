@@ -107,14 +107,21 @@ def initialize_network():
                 for t in threads:
                     t.join()
                     threads.remove(t)
-        # TODO: Else do service checks with ansible only?
+        else: # Perform Service Checks
+            thread = Thread(target = machine.service_check, args = ("~/.ssh/id_ed25519-pwless"))
+            thread.start()
+            threads.append(thread)
+
+            if len(threads) == 2: # TODO: Only provision 2 machines at a time (HOTFIX)
+                for t in threads:
+                    t.join()
+                    threads.remove(t)# TODO: Else do service checks with ansible only?
         full_network.append(machine)
 
     for thread in threads:
         thread.join()
 
-    if TF_PROVISION:
-        print(f"All machines have been provisioned.")
+    print(f"All machines have been provisioned.")
 
 
 if __name__ == '__main__':

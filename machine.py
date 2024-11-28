@@ -36,6 +36,16 @@ class Machine:
             ansible_cmd = f"{base_cmd} {script} {appendix} {args}"
             os.system(ansible_cmd)
 
+    def service_check(self, key):
+        base_cmd = f"ansible-playbook -u ubuntu --key-file {key} -i {self.ip}," 
+        appendix = "--ssh-extra-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'"
+        # Gather Scripts
+        for service in self.services: # Naming Scheme will be deploy_{service_name}.yaml
+            script = f"ansible/deploy_{service.name}.yaml"
+            args = f"--extra-vars '{json.dumps(service.config)}'"
+            ansible_cmd = f"{base_cmd} {script} {appendix} {args}"
+            os.system(ansible_cmd)
+
     def get_service(self, name):
         return [x for x in self.services if x.name == name][0]
 
