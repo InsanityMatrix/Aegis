@@ -1,11 +1,11 @@
 Big TODOS:
-- Secure the Repository (Move all Plaintext PWs and whatnot to environment variables
+- Secure the Repository (Move all Plaintext PWs and whatnot to environment variables) [DONE]
 - Add more machines:
  - Domain Controller (OpenLDAP)
  - DNS Server (Bind9/PowerDNS)
  - DHCP Server (ISC DHCP or dnsmasq)
  - Firewall (pfSense?)
- - VPN (Is it even feasible on this isolated network?)
+ - VPN (Is it even feasible/logical on this isolated network?)
  - Database Management System
  - Message Queue (Redis/RabbitMQ)
  - Backup Server (Bacula, Veeam, Restic)

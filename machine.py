@@ -10,6 +10,9 @@ class Machine:
         self.ip = ip
         self.services = services # Array of service objects
 
+    def __str__(self):
+        return json.dumps(self.__dict__)
+    
     # key = ssh key location
     def provision(self, key, pmpass):
         # Run Terraform Creation
