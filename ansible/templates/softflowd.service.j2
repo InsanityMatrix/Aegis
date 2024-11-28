@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/sbin/softflowd -i {{ network_interface }} -n {{ siem_ip }} -D
+ExecStart=/usr/sbin/softflowd -i {{ network_interface }} -n {{ siem_ip }}:2055 -D
 Restart=on-failure
 User=root
 
