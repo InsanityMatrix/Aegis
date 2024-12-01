@@ -24,7 +24,7 @@ class Machine:
         print(f"Terraform Exited with code {tferr}")
         
         if 'no changes are needed'.encode() in tfout:
-            self.service_check() # TODO: Only do service check if asked for
+            self.service_check(key) # TODO: Only do service check if asked for
             return False #No Changes Applied so machine is good
         # Ansible Provisioning
         print(f"PROVISIONING {self.hostname} WITH ANSIBLE")
