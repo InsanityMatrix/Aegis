@@ -24,7 +24,8 @@ class Machine:
         print(f"Terraform Exited with code {tferr}")
         
         if 'no changes are needed'.encode() in tfout:
-            return #No Changes Applied so machine is good
+            self.service_check() # TODO: Only do service check if asked for
+            return False #No Changes Applied so machine is good
         # Ansible Provisioning
         print(f"PROVISIONING {self.hostname} WITH ANSIBLE")
         base_cmd = f"ansible-playbook -u ubuntu --key-file {key} -i {self.ip}," 
@@ -35,6 +36,8 @@ class Machine:
             args = f"--extra-vars '{json.dumps(service.config)}'"
             ansible_cmd = f"{base_cmd} {script} {appendix} {args}"
             os.system(ansible_cmd)
+
+        return True
 
     def service_check(self, key):
         base_cmd = f"ansible-playbook -u ubuntu --key-file {key} -i {self.ip}," 

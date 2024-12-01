@@ -30,12 +30,14 @@ docker_service = Service("docker", { "container" : "jmalloc/echo-server" })
 
 # We have been fed an anomaly as JSON data to investigate
 def investigate(data):
-    data = data
-    if 'netflow' in data:
-        # This is a network anomaly
-        # Figure out which machine this is on, associated services, and check logs
-        # Feed whatever is found to an AI to recieve a malintent score, take action or let slide.
-        print(data)
+    for anomaly in data: # May be a chance of recieving multiple anomalies in one req
+        if 'ipv4_src_addr' in anomaly:
+            src = anomaly['ipv4_src_addr']
+            dst = anomaly['ipv4_dst_addr']
+            in_bytes = anomaly['in_bytes']
+            protocol = anomaly['protocol']
+
+            print(f"Investigating P{protocol} {in_bytes}byte transfer from {src} -> {dst}")
 
 @app.route('/anomaly', methods=['POST'])
 def handle_anomaly():
@@ -102,7 +104,7 @@ def initialize_network():
             thread = Thread(target = machine.provision, args = ("~/.ssh/id_ed25519-pwless", PM_PASS))
             thread.start()
             threads.append(thread)
-
+            
             if len(threads) == 2: # TODO: Only provision 2 machines at a time (HOTFIX)
                 for t in threads:
                     t.join()
@@ -112,10 +114,10 @@ def initialize_network():
             thread.start()
             threads.append(thread)
 
-            if len(threads) == 2: # TODO: Only provision 2 machines at a time (HOTFIX)
+            if len(threads) == 2: # TODO: Only provision 2 machines at a time (HOTFIX) - utilize resources more effectively
                 for t in threads:
                     t.join()
-                    threads.remove(t)# TODO: Else do service checks with ansible only?
+                    threads.remove(t)
         full_network.append(machine)
 
     for thread in threads:

@@ -1,12 +1,15 @@
 [Unit]
 Description=Softflowd NetFlow collector
 After=network.target
+Wants=network-online.target
 
 [Service]
 Type=simple
 ExecStart=/usr/sbin/softflowd -i {{ network_interface }} -n {{ siem_ip }}:2055 -D
 Restart=on-failure
 User=root
+# To give some slack time
+ExecStartPre=/bin/sleep 5
 
 [Install]
 WantedBy=multi-user.target
