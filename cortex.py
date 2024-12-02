@@ -57,11 +57,21 @@ def handle_anomaly():
     thread.start()
     return 'Success', 200
 
+"""
+SIEM Alerts webhook
+
+This is to allow the network to take action based on Alerts sent from the SIEM
+Current alerts defined are
+- server_shutdown: Detect when a server shutsdown and attempts to restart
+- docker_stopped
+"""
 @app.route('/webhook', methods=['POST'])
 def handle_webhook():
+    #TODO: Make pattern based alert responses modular. defined by json files?
     data = request.json
     #Validate request
-    if 'event' in data and data['event'] == 'server_shutdown':
+    # SIEM Alerts will have an 'event' field that names the type of event detected (RegEx pattern based)
+    if 'event' in data and data['event'] == 'server_shutdown': 
         #Run ansible playbook to restart nginx on the balancer
         print("RECEIVED SHUTDOWN")
         if 'target Shutdown' not in data['message']:
@@ -69,7 +79,7 @@ def handle_webhook():
             return 'Success', 200
         hostname = data['host']['hostname']
         machine = [x for x in full_network if x.hostname == hostname][0]
-        os.system(f"terraform state push {hostname}.tfstate")
+        machine.provision("~/.ssh/id_ed25519-pwless", PM_PASS)
 
     elif data['event'] == 'docker_stopped':
         if 'systemd[1]: docker-' not in data['message']: # Only want the systemd docker messages
@@ -90,12 +100,15 @@ def handle_webhook():
 def initialize_network():
     threads = []
     network = []
-    for machine_file in machine_files:
+
+    # Load managed network from all json files
+    for machine_file in machine_files: 
         network.append(Machine.load_from_file(machine_file))
 
-    print(f"Machines: {network}")
+    # Deploy machine and append it to our global full_network array. Also write to machines dir
     for machine in network:
-        if SIEM_IP: # IF SIEM, also throw softflowd on for IsoFlow Integration
+        services = [ service.name for service in machine.services]
+        if SIEM_IP and ('softflowd' not in services): # IF SIEM is set and not softflowd, also throw softflowd on for IsoFlow Integration
             machine.services.append(Service("softflowd", {"siem_ip": SIEM_IP, "network_interface": VM_INT}))
 
         if TF_PROVISION: # This could be a cemented network, in which case Aegis does not provision and it just takes security actions
@@ -126,7 +139,7 @@ def initialize_network():
     print(f"All machines have been provisioned.")
 
 
-if __name__ == '__main__':
+if __name__ == '__main__': # TODO: Implement interactive start for defining machines easily?
     print("Initializing the Network")
     initialize_network() 
     print("Starting App")

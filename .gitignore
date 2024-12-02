@@ -2,3 +2,6 @@
 states/*
 __pycache__
 archived
+# TODO: untrack
+# Currently leave machine definitions tracked for example and testing purposes
+# machines/*
