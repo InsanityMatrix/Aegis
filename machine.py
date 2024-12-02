@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-
+from service import Service
 class Machine:
     #Initialize each machine. Required: vmid, hostname, ip
     def __init__(self, vmid, hostname, ip, services):
@@ -11,7 +11,29 @@ class Machine:
         self.services = services # Array of service objects
 
     def __str__(self):
-        return json.dumps(self.__dict__)
+        return json.dumps(self.to_dict(), indent=2)
+    
+    def to_dict(self):
+        # Convert the Machine instance to a dictionary, including its services
+        return {
+            "vmid": self.vmid,
+            "hostname": self.hostname,
+            "ip": self.ip,
+            "services": [service.to_dict() for service in self.services]
+        }
+    
+    # Create a Machine instance from a dictionary
+    @classmethod
+    def from_dict(cls, data):
+        services = [Service.from_dict(service) for service in data.get("services", [])]
+        return cls(data["vmid"], data["hostname"], data["ip"], services)
+    
+    # Load a Machine instance from a JSON file
+    @classmethod
+    def load_from_file(cls, filename):
+        with open(filename, "r") as f:
+            data = json.load(f)
+        return cls.from_dict(data)
     
     # key = ssh key location
     def provision(self, key, pmpass):

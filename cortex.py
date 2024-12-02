@@ -5,19 +5,27 @@ import json
 from dotenv import load_dotenv
 from machine import Machine
 from service import Service
+from siem import SIEM
 from threading import Thread
-
+from glob import glob
 load_dotenv()
 
 app = Flask(__name__)
 full_network = []
 homedir = os.getcwd()
+machinedir = "machines/"
+machine_files = glob(os.path.join(machinedir, "*.json"))
+#TODO: Document all environment variables and their purpose
 PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
-#ISOFLOW = os.getenv('ISOFLOW_SERVER')
 SIEM_IP = os.getenv('SIEM_IP')
-VM_INT = "eth0" # TODO: Allow changing later
+ELASTICSEARCH = os.getenv('ELASTICSEARCH') # Something like http://10.0.2.3:9200
+SIEM_INDEX = os.getenv('SIEM_INDEX') or "logs-*"
+ESUSER = os.getenv('ESUSER')
+ESPASS = os.getenv('ESPASS')
+VM_INT = "eth0" # TODO: Change dependent on OS of template/versions etc.
 
+siem = SIEM(ELASTICSEARCH, SIEM_INDEX, ESUSER, ESPASS) # Used for investigating network anomalies later
 
 if type(TF_PROVISION) == str and TF_PROVISION.lower() == "false":
     TF_PROVISION = False
@@ -38,6 +46,8 @@ def investigate(data):
             protocol = anomaly['protocol']
 
             print(f"Investigating P{protocol} {in_bytes}byte transfer from {src} -> {dst}")
+            #TODO: Classify Suspicions (Webserver traffic/logs?, ssh?, etc.)
+
 
 @app.route('/anomaly', methods=['POST'])
 def handle_anomaly():
@@ -78,24 +88,12 @@ def handle_webhook():
 
 
 def initialize_network():
-    #Temporarily define network in code
-    balancer_service = Service("balancer", { "host_ips" : [] })
-    bfilebeat_service = Service("filebeat", { "hostname": "balancer", "extra_files": ["/var/log/nginx/*.log"]})
-    balancer = Machine(400, "balancer", "10.0.2.5", [balancer_service, bfilebeat_service])
-
-    network = [balancer]
-
-    for i in range(4):
-        filebeat_service = Service("filebeat", {"docker": "yes", "hostname": f"webserver{i+1}"})
-        services = [docker_service, filebeat_service]
-        new_webserver = Machine(401 + i, f"webserver{i+1}", f"10.0.2.{10+i}", services)
-        bsrv = balancer.get_service("balancer")
-        bsrv.config["host_ips"].append(f"10.0.2.{10+i}")
-        balancer.set_service(bsrv.name, bsrv.config)
-        network.append(new_webserver)
-    
     threads = []
-    
+    network = []
+    for machine_file in machine_files:
+        network.append(Machine.load_from_file(machine_file))
+
+    print(f"Machines: {network}")
     for machine in network:
         if SIEM_IP: # IF SIEM, also throw softflowd on for IsoFlow Integration
             machine.services.append(Service("softflowd", {"siem_ip": SIEM_IP, "network_interface": VM_INT}))
@@ -110,7 +108,7 @@ def initialize_network():
                     t.join()
                     threads.remove(t)
         else: # Perform Service Checks
-            thread = Thread(target = machine.service_check, args = ("~/.ssh/id_ed25519-pwless"))
+            thread = Thread(target = machine.service_check, args = ("~/.ssh/id_ed25519-pwless", ))
             thread.start()
             threads.append(thread)
 
@@ -118,6 +116,8 @@ def initialize_network():
                 for t in threads:
                     t.join()
                     threads.remove(t)
+        with open(f"{machinedir}/{machine.hostname}.json", 'w') as mfile:
+            mfile.write(f"{machine}")
         full_network.append(machine)
 
     for thread in threads:

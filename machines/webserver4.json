@@ -1,0 +1,41 @@
+{
+  "vmid": 404,
+  "hostname": "webserver4",
+  "ip": "10.0.2.13",
+  "services": [
+    {
+      "name": "docker",
+      "config": {
+        "container": "jmalloc/echo-server"
+      }
+    },
+    {
+      "name": "filebeat",
+      "config": {
+        "docker": "yes",
+        "hostname": "webserver4"
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    }
+  ]
+}

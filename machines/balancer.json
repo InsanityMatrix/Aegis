@@ -1,0 +1,48 @@
+{
+  "vmid": 400,
+  "hostname": "balancer",
+  "ip": "10.0.2.5",
+  "services": [
+    {
+      "name": "balancer",
+      "config": {
+        "host_ips": [
+          "10.0.2.10",
+          "10.0.2.11",
+          "10.0.2.12",
+          "10.0.2.13"
+        ]
+      }
+    },
+    {
+      "name": "filebeat",
+      "config": {
+        "hostname": "balancer",
+        "extra_files": [
+          "/var/log/nginx/*.log"
+        ]
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    },
+    {
+      "name": "softflowd",
+      "config": {
+        "siem_ip": "10.0.2.3",
+        "network_interface": "eth0"
+      }
+    }
+  ]
+}
