@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from machine import Machine
 from service import Service
 from siem import SIEM
-from threading import Thread
+from threading import Thread, Semaphore
 from glob import glob
 load_dotenv()
 
@@ -26,7 +26,7 @@ ESPASS = os.getenv('ESPASS')
 VM_INT = "eth0" # TODO: Change dependent on OS of template/versions etc.
 
 siem = SIEM(ELASTICSEARCH, SIEM_INDEX, ESUSER, ESPASS) # Used for investigating network anomalies later
-
+semaphore = Semaphore(2)
 if type(TF_PROVISION) == str and TF_PROVISION.lower() == "false":
     TF_PROVISION = False
 else:
@@ -64,7 +64,13 @@ def investigate(data):
             
             if machineport == 80 or machineport == 443: # Webserver traffic
                 # Query SIEM for related logs:
-                logs = siem.query_log(machine.hostname, "/var/log/nginx/access.log") # TODO: Unhardcode - allow for diff types of webservers etc.
+                logs = None
+                with semaphore:
+                    try: 
+                        logs = siem.query_log(machine.hostname, "/var/log/nginx/access.log") # TODO: Unhardcode - allow for diff types of webservers etc.
+                    except Exception as e:
+                        print(f"Error querying log: {e}")
+                        
                 if not logs:
                     print("Error retrieving logs from SIEM.")
                     return

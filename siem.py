@@ -28,10 +28,8 @@ class SIEM:
             auth=(self.username, self.password),
             data=json.dumps(query)
         )
+        response.raise_for_status()
+        # Retrieved logs successfully
+        return response.json()
 
-        if response.status_code == 200:
-            # Retrieved logs successfully
-            return response.json()
-        else:
-            return None # TODO: Throw Error?
         
