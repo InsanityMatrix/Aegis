@@ -47,6 +47,28 @@ def investigate(data):
 
             print(f"Investigating P{protocol} {in_bytes}byte transfer from {src} -> {dst}")
             #TODO: Classify Suspicions (Webserver traffic/logs?, ssh?, etc.)
+            machine = None
+            machineport = -1
+            for m in full_network:
+                if m.ip == src:
+                    machine = m
+                    machineport = anomaly['l4_src_port']
+                    break
+                elif m.ip == dst:
+                    machine = m
+                    machineport = anomaly['l4_dst_port']
+                    break
+            
+            if machine == None: # Neither of the machines are protected by Aegis. Disregard
+                return
+            
+            if machineport == 80 or machineport == 443: # Webserver traffic
+                # Query SIEM for related logs:
+                logs = siem.query_log(machine.hostname, "/var/log/nginx/access.log") # TODO: Unhardcode - allow for diff types of webservers etc.
+                if not logs:
+                    print("Error retrieving logs from SIEM.")
+                    return
+                print(f"Logs Retrieved.\n{logs}")
 
 
 @app.route('/anomaly', methods=['POST'])
