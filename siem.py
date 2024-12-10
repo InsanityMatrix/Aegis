@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import os
 from elasticsearch import Elasticsearch
 
@@ -10,11 +10,17 @@ class SIEM:
         self.index = index
         self.username = username
         self.password = password
+
+    def add_MOE(time_str, num):
+        dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
+        dt_altered = dt + timedelta(seconds=num)
+        formatted_str = dt_altered.isoformat().replace("+00:00", "Z")
+        return formatted_str
     
     # TODO: https://www.elastic.co/guide/en/elasticsearch/client/python-api/current/connecting.html
     def query_log(self, hostname, log):
         # Get recent logs of today:
-        current_date = datetime.datetime.now().strftime('%Y.%m.%d')
+        current_date = datetime.now().strftime('%Y.%m.%d')
         resp = self.client.search(index=f"{self.index}{current_date}", query={
             "bool": {
                 "must": [
@@ -31,6 +37,8 @@ class SIEM:
     # Start and end in this format: 2024-11-26T21:57:54.583053Z
     def query_log_range(self, hostname, log, start, end, ip=""):
         #
+        start = self.add_MOE(start, -5)
+        end = self.add_MOE(end, 5)
         resp = self.client.search(index=f"{self.index}*",size=1000,query={
             "bool": {
                 "must": [
