@@ -2,6 +2,7 @@
 states/*
 __pycache__
 archived
+events/*
 # TODO: untrack
 # Currently leave machine definitions tracked for example and testing purposes
 # machines/*

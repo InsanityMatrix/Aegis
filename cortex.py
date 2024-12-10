@@ -1,3 +1,4 @@
+import datetime
 from flask import Flask, request
 import os
 import time
@@ -20,7 +21,7 @@ PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
 SIEM_IP = os.getenv('SIEM_IP')
 ELASTICSEARCH = os.getenv('ELASTICSEARCH') # Something like http://10.0.2.3:9200
-SIEM_INDEX = os.getenv('SIEM_INDEX') or "logs-*"
+SIEM_INDEX = os.getenv('SIEM_INDEX') or "logs-"
 ESUSER = os.getenv('ESUSER')
 ESPASS = os.getenv('ESPASS')
 VM_INT = "eth0" # TODO: Change dependent on OS of template/versions etc.
@@ -45,16 +46,23 @@ def investigate(data):
             in_bytes = anomaly['in_bytes']
             protocol = anomaly['protocol']
 
+            # Time Range
+            start_time = anomaly['first_switched']
+            end_time = anomaly['last_switched']
+
             print(f"Investigating P{protocol} {in_bytes}byte transfer from {src} -> {dst}")
             #TODO: Classify Suspicions (Webserver traffic/logs?, ssh?, etc.)
             machine = None
             machineport = -1
+            badip = None
             for m in full_network:
                 if m.ip == src:
+                    badip = dst
                     machine = m
                     machineport = anomaly['l4_src_port']
                     break
                 elif m.ip == dst:
+                    badip = src
                     machine = m
                     machineport = anomaly['l4_dst_port']
                     break
@@ -67,7 +75,13 @@ def investigate(data):
                 logs = None
                 with semaphore:
                     try: 
-                        logs = siem.query_log(machine.hostname, "/var/log/nginx/access.log") # TODO: Unhardcode - allow for diff types of webservers etc.
+                        logs = siem.query_log_range(machine.hostname, "/var/log/nginx/access.log", start=start_time, end=end_time, ip=badip) # TODO: Unhardcode - allow for diff types of webservers etc.
+                        print(f"Found {len(logs)} related logs for event.")
+                        # TODO: Take action, in meantime create an event file and write to it for later investigation
+                        with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
+                            efile.write(f"{anomaly}\n\n")
+                            for log in logs:
+                                efile.write(log)
                     except Exception as e:
                         print(f"Error querying log: {e}")
                         
