@@ -11,7 +11,7 @@ class SIEM:
         self.username = username
         self.password = password
 
-    def add_MOE(time_str, num):
+    def add_MOE(self, time_str, num):
         dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
         dt_altered = dt + timedelta(seconds=num)
         formatted_str = dt_altered.isoformat().replace("+00:00", "Z")
