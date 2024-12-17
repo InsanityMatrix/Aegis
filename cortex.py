@@ -73,27 +73,30 @@ def investigate(data):
             if machine == None: # Neither of the machines are protected by Aegis. Disregard
                 return
             
-            if service_info[machineport] != None: 
-                # Query potential logs that would give ideas as to whats going on
-                info = service_info[machineport]
-                possible_services = info['services']
-                queries = []
-                
-                for svc in possible_services:
-                    with semaphore:
-                        try: 
-                            logs = siem.query_log_range(logs = siem.query_log_range(machine.hostname, svc['log'], start=start_time, end=end_time, ip=badip))
-                            if len(logs) > 0:
-                                queries.append({'name': svc['name'], 'logs': logs})
-                        except Exception as e:
-                            print(f"Error querying log: {e}")
-                        
-                if len(queries) > 0:
-                    print(f"Event Saved. IP: {machine.ip}:{machineport}, {len(queries)} hits")
-                    with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
-                                efile.write(f"{anomaly}\n{queries}")
-                else:
-                    print(f"No logs found for event.")
+            try: 
+                if service_info[machineport] != None: 
+                    # Query potential logs that would give ideas as to whats going on
+                    info = service_info[machineport]
+                    possible_services = info['services']
+                    queries = []
+                    
+                    for svc in possible_services:
+                        with semaphore:
+                            try: 
+                                logs = siem.query_log_range(logs = siem.query_log_range(machine.hostname, svc['log'], start=start_time, end=end_time, ip=badip))
+                                if len(logs) > 0:
+                                    queries.append({'name': svc['name'], 'logs': logs})
+                            except Exception as e:
+                                print(f"Error querying log: {e}")
+                            
+                    if len(queries) > 0:
+                        print(f"Event Saved. IP: {machine.ip}:{machineport}, {len(queries)} hits")
+                        with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
+                                    efile.write(f"{anomaly}\n{queries}")
+                    else:
+                        print(f"No logs found for event.")
+            except KeyError as ke:
+                print("Port is not associated with services. No further investigation.")
 
 
 @app.route('/anomaly', methods=['POST'])
