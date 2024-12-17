@@ -92,7 +92,11 @@ def investigate(data):
                     if len(queries) > 0:
                         print(f"Event Saved. IP: {machine.ip}:{machineport}, {len(queries)} hits")
                         with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
-                                    efile.write(f"{anomaly}\n{queries}")
+                                    efile.write(f"{anomaly}\n\n")
+                                    for q in queries:
+                                        efile.write(f"{q['name']}:\n\n")
+                                        for log in q['logs']:
+                                            efile.write(f"{log['message']}\n")
                     else:
                         print(f"No logs found for event.")
             except KeyError as ke:
