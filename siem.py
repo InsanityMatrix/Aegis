@@ -8,16 +8,15 @@ class SIEM:
     def __init__(self, URL, index, username, password):
         self.client = Elasticsearch(f"{URL}", basic_auth=(username, password), verify_certs=False)
         self.index = index
-        self.username = username
-        self.password = password
 
+    #Add or subtract time in seconds from time_str. used because log entries can be made outside the range of flow starts & ends
     def add_MOE(self, time_str, num):
         dt = datetime.fromisoformat(time_str.replace("Z", "+00:00"))
         dt_altered = dt + timedelta(seconds=num)
         formatted_str = dt_altered.isoformat().replace("+00:00", "Z")
         return formatted_str
     
-    # TODO: https://www.elastic.co/guide/en/elasticsearch/client/python-api/current/connecting.html
+    # Query a log for all recent results (returns last 10)
     def query_log(self, hostname, log):
         # Get recent logs of today:
         current_date = datetime.now().strftime('%Y.%m.%d')
@@ -33,10 +32,10 @@ class SIEM:
         print("Got %d Hits: " % resp['hits']['total']['value'])
         return resp['hits']['hits']
 
-    # Query for log entries within a time range
+    # Query for log entries within a time range, with IP
     # Start and end in this format: 2024-11-26T21:57:54.583053Z
     def query_log_range(self, hostname, log, start, end, ip=""):
-        #
+        
         start = self.add_MOE(start, -5)
         end = self.add_MOE(end, 5)
         resp = self.client.search(index=f"{self.index}*",size=1000,query={

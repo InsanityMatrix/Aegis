@@ -1,0 +1,310 @@
+[
+    {
+        "port": 21,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "vsftpd",
+                "log": "/var/log/vsftpd.log"
+            },
+            {
+                "name": "proftpd",
+                "log": "/var/log/proftpd/proftpd.log"
+            }
+        ]
+    },
+    {
+        "port": 23,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "telnet",
+                "log": "/var/log/auth.log"
+            }
+        ]
+    },
+    {
+        "port": 69,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "tftp",
+                "log": "/var/log/syslog"
+            }
+        ]
+    },
+    {
+        "port": 110,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "pop3",
+                "log": "/var/log/mail.log"
+            }
+        ]
+    },
+    {
+        "port": 119,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "nntp",
+                "log": "/var/log/news/news.log"
+            }
+        ]
+    },
+    {
+        "port": 123,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "ntp",
+                "log": "/var/log/syslog"
+            }
+        ]
+    },
+    {
+        "port": 137,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "samba",
+                "log": "/var/log/samba/log.smbd"
+            }
+        ]
+    },
+    {
+        "port": 138,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "samba",
+                "log": "/var/log/samba/log.nmbd"
+            }
+        ]
+    },
+    {
+        "port": 139,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "samba",
+                "log": "/var/log/samba/log.smbd"
+            }
+        ]
+    },
+    {
+        "port": 161,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "snmpd",
+                "log": "/var/log/syslog"
+            }
+        ]
+    },
+    {
+        "port": 389,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "openldap",
+                "log": "/var/log/slapd.log"
+            }
+        ]
+    },
+    {
+        "port": 636,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "openldap (LDAPS)",
+                "log": "/var/log/slapd.log"
+            }
+        ]
+    },
+    {
+        "port": 8000,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "http-alt",
+                "log": "/var/log/httpd/access_log"
+            }
+        ]
+    },
+    {
+        "port": 8080,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "tomcat",
+                "log": "/var/log/tomcat/catalina.out"
+            },
+            {
+                "name": "jenkins",
+                "log": "/var/log/jenkins/jenkins.log"
+            }
+        ]
+    },
+    {
+        "port": 9000,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "php-fpm",
+                "log": "/var/log/php7.4-fpm.log"
+            }
+        ]
+    },
+    {
+        "port": 514,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "rsyslog",
+                "log": "/var/log/syslog"
+            }
+        ]
+    },
+    {
+        "port": 1812,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "radius",
+                "log": "/var/log/freeradius/radius.log"
+            }
+        ]
+    },
+    {
+        "port": 2049,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "nfs",
+                "log": "/var/log/messages"
+            }
+        ]
+    },
+    {
+        "port": 6000,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "X11",
+                "log": "/var/log/Xorg.0.log"
+            }
+        ]
+    },
+    {
+        "port": 25565,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "minecraft-server",
+                "log": "/var/log/minecraft/server.log"
+            }
+        ]
+    },
+    {
+        "port": 22,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "sshd",
+                "log": "/var/log/auth.log"
+            }
+        ]
+    },
+    {
+        "port": 25,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "postfix",
+                "log": "/var/log/mail.log"
+            },
+            {
+                "name": "sendmail",
+                "log": "/var/log/maillog"
+            }
+        ]
+    },
+    {
+        "port": 53,
+        "protocol": "udp",
+        "services": [
+            {
+                "name": "bind",
+                "log": "/var/log/syslog"
+            },
+            {
+                "name": "dnsmasq",
+                "log": "/var/log/syslog"
+            }
+        ]
+    },
+    {
+        "port": 80,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "nginx",
+                "log": "/var/log/nginx/access.log"
+            },
+            {
+                "name": "apache2",
+                "log": "/var/log/apache2/access.log"
+            }
+        ]
+    },
+    {
+        "port": 443,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "nginx",
+                "log": "/var/log/nginx/access.log"
+            },
+            {
+                "name": "apache2",
+                "log": "/var/log/apache2/access.log"
+            }
+        ]
+    },
+    {
+        "port": 3306,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "mysql",
+                "log": "/var/log/mysql/error.log"
+            },
+            {
+                "name": "mariadb",
+                "log": "/var/log/mysql/error.log"
+            }
+        ]
+    },
+    {
+        "port": 5432,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "postgresql",
+                "log": "/var/log/postgresql/postgresql.log"
+            }
+        ]
+    },
+    {
+        "port": 6379,
+        "protocol": "tcp",
+        "services": [
+            {
+                "name": "redis-server",
+                "log": "/var/log/redis/redis-server.log"
+            }
+        ]
+    }
+]

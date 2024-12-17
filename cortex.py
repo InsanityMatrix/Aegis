@@ -1,14 +1,13 @@
-import datetime
 from flask import Flask, request
 import os
-import time
-import json
 from dotenv import load_dotenv
 from machine import Machine
 from service import Service
 from siem import SIEM
 from threading import Thread, Semaphore
 from glob import glob
+import json
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -34,6 +33,12 @@ else:
     TF_PROVISION = True
 
 
+# Load Service Info
+with open("data/services.json", 'r') as file:
+    loaded = json.load(file)
+
+service_info = {item['port']: item for item in loaded}
+
 # Some globally defined Services
 docker_service = Service("docker", { "container" : "jmalloc/echo-server" })
 
@@ -50,8 +55,6 @@ def investigate(data):
             start_time = anomaly['first_switched']
             end_time = anomaly['last_switched']
 
-            print(f"Investigating P{protocol} {in_bytes}byte transfer from {src} -> {dst}")
-            #TODO: Classify Suspicions (Webserver traffic/logs?, ssh?, etc.)
             machine = None
             machineport = -1
             badip = None
@@ -70,25 +73,27 @@ def investigate(data):
             if machine == None: # Neither of the machines are protected by Aegis. Disregard
                 return
             
-            if machineport == 80 or machineport == 443: # Webserver traffic
-                # Query SIEM for related logs:
-                logs = None
-                with semaphore:
-                    try: 
-                        logs = siem.query_log_range(machine.hostname, "/var/log/nginx/access.log", start=start_time, end=end_time, ip=badip) # TODO: Unhardcode - allow for diff types of webservers etc.
-                        print(f"Found {len(logs)} related logs for event.")
-                        # TODO: Take action, in meantime create an event file and write to it for later investigation
-                        with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
-                            efile.write(f"{anomaly}\n\n")
-                            for log in logs:
-                                efile.write(log)
-                    except Exception as e:
-                        print(f"Error querying log: {e}")
+            if service_info[machineport] != None: 
+                # Query potential logs that would give ideas as to whats going on
+                info = service_info[machineport]
+                possible_services = info['services']
+                queries = []
+                
+                for svc in possible_services:
+                    with semaphore:
+                        try: 
+                            logs = siem.query_log_range(logs = siem.query_log_range(machine.hostname, svc['log'], start=start_time, end=end_time, ip=badip))
+                            if len(logs) > 0:
+                                queries.append({'name': svc['name'], 'logs': logs})
+                        except Exception as e:
+                            print(f"Error querying log: {e}")
                         
-                if not logs:
-                    print("Error retrieving logs from SIEM.")
-                    return
-                print(f"Logs Retrieved.\n{logs}")
+                if len(queries) > 0:
+                    print(f"Event Saved. IP: {machine.ip}:{machineport}, {len(queries)} hits")
+                    with open(f"events/{start_time}-{machine.ip}.event", 'w') as efile:
+                                efile.write(f"{anomaly}\n{queries}")
+                else:
+                    print(f"No logs found for event.")
 
 
 @app.route('/anomaly', methods=['POST'])
