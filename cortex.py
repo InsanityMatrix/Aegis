@@ -83,7 +83,7 @@ def investigate(data):
                     for svc in possible_services:
                         with semaphore:
                             try: 
-                                logs = siem.query_log_range(logs = siem.query_log_range(machine.hostname, svc['log'], start=start_time, end=end_time, ip=badip))
+                                logs = siem.query_log_range(machine.hostname, svc['log'], start=start_time, end=end_time, ip=badip)
                                 if len(logs) > 0:
                                     queries.append({'name': svc['name'], 'logs': logs})
                             except Exception as e:
