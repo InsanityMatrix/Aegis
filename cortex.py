@@ -96,7 +96,7 @@ def investigate(data):
                                     for q in queries:
                                         efile.write(f"{q['name']}:\n\n")
                                         for log in q['logs']:
-                                            efile.write(f"{log['message']}\n")
+                                            efile.write(f"{log['_source']['message']}\n")
                     else:
                         print(f"No logs found for event.")
             except KeyError as ke:
