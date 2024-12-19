@@ -1,6 +1,7 @@
 {
   "vmid": 400,
   "hostname": "balancer",
+  "user": "ubuntu",
   "ip": "10.0.2.5",
   "services": [
     {

@@ -2,11 +2,14 @@ import json
 import os
 import subprocess
 from service import Service
+
+
 class Machine:
     #Initialize each machine. Required: vmid, hostname, ip
-    def __init__(self, vmid, hostname, ip, services):
+    def __init__(self, vmid, hostname, user, ip, services):
         self.vmid = vmid
         self.hostname = hostname
+        self.user = user
         self.ip = ip
         self.services = services # Array of service objects
 
@@ -18,6 +21,7 @@ class Machine:
         return {
             "vmid": self.vmid,
             "hostname": self.hostname,
+            "user": self.user,
             "ip": self.ip,
             "services": [service.to_dict() for service in self.services]
         }
@@ -26,7 +30,7 @@ class Machine:
     @classmethod
     def from_dict(cls, data):
         services = [Service.from_dict(service) for service in data.get("services", [])]
-        return cls(data["vmid"], data["hostname"], data["ip"], services)
+        return cls(data["vmid"], data["hostname"], data["user"], data["ip"], services)
     
     # Load a Machine instance from a JSON file
     @classmethod
@@ -50,7 +54,7 @@ class Machine:
             return False #No Changes Applied so machine is good
         # Ansible Provisioning
         print(f"PROVISIONING {self.hostname} WITH ANSIBLE")
-        base_cmd = f"ansible-playbook -u ubuntu --key-file {key} -i {self.ip}," 
+        base_cmd = f"ansible-playbook -u {self.user} --key-file {key} -i {self.ip}," 
         appendix = "--ssh-extra-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'"
         # Gather Scripts
         for service in self.services: # Naming Scheme will be deploy_{service_name}.yaml
@@ -62,7 +66,7 @@ class Machine:
         return True
 
     def service_check(self, key):
-        base_cmd = f"ansible-playbook -u ubuntu --key-file {key} -i {self.ip}," 
+        base_cmd = f"ansible-playbook -u {self.user} --key-file {key} -i {self.ip}," 
         appendix = "--ssh-extra-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'"
         # Gather Scripts
         for service in self.services: # Naming Scheme will be deploy_{service_name}.yaml

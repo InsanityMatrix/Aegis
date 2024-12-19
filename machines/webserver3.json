@@ -1,6 +1,7 @@
 {
   "vmid": 403,
   "hostname": "webserver3",
+  "user": "ubuntu",
   "ip": "10.0.2.12",
   "services": [
     {

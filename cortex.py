@@ -18,6 +18,7 @@ machine_files = glob(os.path.join(machinedir, "*.json"))
 #TODO: Document all environment variables and their purpose
 PM_PASS = os.getenv('PROXMOX_PASS')
 TF_PROVISION = os.getenv('TF_PROVISIONING') or True
+SERVICE_CHECKS = os.getenv('SERVICE_CHECKS') or True
 SIEM_IP = os.getenv('SIEM_IP')
 ELASTICSEARCH = os.getenv('ELASTICSEARCH') # Something like http://10.0.2.3:9200
 SIEM_INDEX = os.getenv('SIEM_INDEX') or "logs-"
@@ -32,6 +33,10 @@ if type(TF_PROVISION) == str and TF_PROVISION.lower() == "false":
 else:
     TF_PROVISION = True
 
+if type(SERVICE_CHECKS) == str and SERVICE_CHECKS.lower() == "false":
+    SERVICE_CHECKS = False
+else:
+    SERVICE_CHECKS = True
 
 # Load Service Info
 with open("data/services.json", 'r') as file:
@@ -42,7 +47,12 @@ service_info = {item['port']: item for item in loaded}
 # Some globally defined Services
 docker_service = Service("docker", { "container" : "jmalloc/echo-server" })
 
-# We have been fed an anomaly as JSON data to investigate
+"""
+Investigate
+
+Given netflow anomaly, investigates associated services and generates a report.
+In the future will take action.
+"""
 def investigate(data):
     for anomaly in data: # May be a chance of recieving multiple anomalies in one req
         if 'ipv4_src_addr' in anomaly:
@@ -125,7 +135,7 @@ def handle_webhook():
     data = request.json
     #Validate request
     # SIEM Alerts will have an 'event' field that names the type of event detected (RegEx pattern based)
-    if 'event' in data and data['event'] == 'server_shutdown': 
+    if 'event' in data and data['event'] == 'server_shutdown':  
         #Run ansible playbook to restart nginx on the balancer
         print("RECEIVED SHUTDOWN")
         if 'target Shutdown' not in data['message']:
@@ -145,7 +155,7 @@ def handle_webhook():
         dockerid = message[message.index('docker-')+7:message.index('docker-')+19]
         machine = [x for x in full_network if x.hostname == hostname][0]
         #Run ansible script for machine depending on type
-        os.system(f"ansible-playbook -u ubuntu --key-file ~/.ssh/id_ed25519-pwless -i {machine.ip}, ansible/restart_container.yaml --ssh-extra-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --extra-vars \"container={dockerid}\"")
+        os.system(f"ansible-playbook -u {machine.user} --key-file ~/.ssh/id_ed25519-pwless -i {machine.ip}, ansible/restart_container.yaml --ssh-extra-args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null' --extra-vars \"container={dockerid}\"")
     
     return 'Success', 200
 
@@ -174,7 +184,7 @@ def initialize_network():
                 for t in threads:
                     t.join()
                     threads.remove(t)
-        else: # Perform Service Checks
+        elif SERVICE_CHECKS: # Perform Service Checks
             thread = Thread(target = machine.service_check, args = ("~/.ssh/id_ed25519-pwless", ))
             thread.start()
             threads.append(thread)

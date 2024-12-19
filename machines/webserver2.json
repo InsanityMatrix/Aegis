@@ -1,6 +1,7 @@
 {
   "vmid": 402,
   "hostname": "webserver2",
+  "user": "ubuntu",
   "ip": "10.0.2.11",
   "services": [
     {
